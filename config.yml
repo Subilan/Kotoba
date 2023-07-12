@@ -1,0 +1,2 @@
+jwt_private_key: aaaaaaaaaaaaaaaaaaa
+jwt_expiration: 120 # in minutes
