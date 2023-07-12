@@ -1,7 +1,6 @@
 package main
 
 import (
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -212,7 +211,7 @@ func createComment(c *gin.Context) {
 		"username":   tg_username,
 		"text":       tg_text,
 		"comment_id": uuid.New().String(),
-		"created_at": time.Now().Format(time.DateTime),
+		"created_at": time.Now().UnixMilli(),
 	})
 
 	if insErr != nil {
@@ -238,9 +237,9 @@ func toggleReaction(c *gin.Context) {
 	tg_emoji := obj.Emoji
 
 	doc := bson.M{
-		"emoji":    tg_emoji,
-		"username": tg_username,
-		"comment_id":   tg_commentId,
+		"emoji":      tg_emoji,
+		"username":   tg_username,
+		"comment_id": tg_commentId,
 	}
 
 	count, countErr := mongoCount("comments", doc)
@@ -259,7 +258,7 @@ func toggleReaction(c *gin.Context) {
 		}
 		respond(c, 200, "", nil)
 	} else {
-		doc["created_at"] = time.Now().Format(time.DateTime)
+		doc["created_at"] = time.Now().UnixMilli()
 
 		// The response is not present, create it.
 		insErr := mongoInsertOne("comments", doc)
@@ -275,58 +274,66 @@ func toggleReaction(c *gin.Context) {
 }
 
 func getComments(c *gin.Context) {
-	tg_borderTimestamp, parseErr1 := parseInt(c.Query("border_timestamp"))
-
-	if parseErr1 != nil {
-		if parseErr1 == strconv.ErrSyntax {
-			respond(c, 500, "Invalid number for field `limit`.", nil)
-		} else {
-			respond(c, 500, parseErr1.Error(), nil)
-		}
-		return
-	}
-
-	tg_limit, parseErr2 := parseInt(c.Query("limit"))
-
-	if parseErr2 != nil {
-		if parseErr2 == strconv.ErrSyntax {
-			respond(c, 500, "Invalid number for field `limit`.", nil)
-		} else {
-			respond(c, 500, parseErr2.Error(), nil)
-		}
-		return
-	}
-
+	q_borderTimestamp := c.Query("border_timestamp")
+	q_limit := c.Query("limit")
 	tg_order := c.Query("order")
+
+	if tg_order == "" {
+		respond(c, 500, "Not enough argument.", nil)
+		return
+	}
 
 	if tg_order != "desc" && tg_order != "asc" {
 		respond(c, 500, "The `order` field in the request must be either `desc` or `asc`.", nil)
 		return
 	}
 
-	tg_borderTime := time.Unix(int64(tg_borderTimestamp), 0)
-	var tg_operator string
+	var tg_borderTimestamp int64
+	var tg_limit int64
+
+	if q_borderTimestamp != "" {
+		parseInt(q_borderTimestamp, &tg_borderTimestamp)
+	}
+
+	if q_limit != "" {
+		parseInt(q_limit, &tg_limit)
+	}
+
 	var tg_order_num int
+	filter := bson.M{}
 	// desc: the newest at the top; asc: the oldest at the top
 	if tg_order == "desc" {
 		// when using desc, the comments we'll get are bound to have dates that are smaller than what is already present.
-		tg_operator = "$lte"
+		if tg_borderTimestamp != 0 {
+			filter = bson.M{
+				"created_at": bson.M{
+					"$lt": tg_borderTimestamp,
+				},
+			}
+		}
 		tg_order_num = -1
 	} else {
 		// when using asc, the comments we'll get are bound to have dates that are bigger than what is already present.
-		tg_operator = "$gte"
+		if tg_borderTimestamp != 0 {
+			filter = bson.M{
+				"created_at": bson.M{
+					"$gt": tg_borderTimestamp,
+				},
+			}
+		}
 		tg_order_num = 1
 	}
 
 	findOptions := options.Find()
-	findOptions.SetSort(bson.M{"created_at": tg_order_num})
-	findOptions.SetLimit(tg_limit)
+	if tg_order_num != 0 {
+		findOptions.SetSort(bson.M{"created_at": tg_order_num})
+	}
 
-	res, err := mongoGetMany("comments", bson.M{
-		"created_at": bson.M{
-			tg_operator: primitive.NewDateTimeFromTime(tg_borderTime),
-		},
-	}, findOptions)
+	if tg_limit != 0 {
+		findOptions.SetLimit(tg_limit)
+	}
+
+	res, err := mongoGetMany("comments", filter, findOptions)
 
 	if err != nil {
 		respond(c, 500, err.Error(), nil)

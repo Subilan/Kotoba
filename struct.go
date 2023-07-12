@@ -1,7 +1,5 @@
 package main
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
-
 type reqCommonLogin struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -24,19 +22,19 @@ type reqDeleteComment struct {
 
 type reqReaction struct {
 	CommentId string `json:"comment_id"`
-	Emoji string `json:"emoji"`
+	Emoji     string `json:"emoji"`
 }
 
 type bsonComment struct {
-	Username  string             `bson:"username"`
-	Text      string             `bson:"text"`
-	Uid       string             `bson:"uid"`
-	CreatedAt primitive.DateTime `bson:"created_at"`
+	Username  string `bson:"username"`
+	Text      string `bson:"text"`
+	Uid       string `bson:"uid"`
+	CreatedAt uint64 `bson:"created_at"`
 }
 
 type bsonCommentReaction struct {
-	Username  string             `bson:"username"`
-	Emoji     string             `bson:"emoji"`
-	CommentId string             `bson:"comment_id"`
-	CreatedAt primitive.DateTime `bson:"created_at"`
+	Username  string `bson:"username"`
+	Emoji     string `bson:"emoji"`
+	CommentId string `bson:"comment_id"`
+	CreatedAt uint64 `bson:"created_at"`
 }
