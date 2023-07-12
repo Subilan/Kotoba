@@ -1,11 +1,8 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-	"reflect"
 	"strconv"
 	"time"
 
@@ -40,28 +37,6 @@ func respond(c *gin.Context, code int, msg string, data any) {
 		"data":      data,
 		"timestamp": time.Now().UnixMilli(),
 	})
-}
-
-func bindJSON(c *gin.Context, objRef any) bool {
-	body, ioErr := io.ReadAll(c.Request.Body)
-
-	if ioErr != nil {
-		return false
-	}
-
-	json.Unmarshal([]byte(body), objRef)
-	return true
-}
-
-func structHasEmptyValue(obj any) bool {
-	ref := reflect.ValueOf(obj)
-	val := make([]interface{}, ref.NumField())
-	for i := 0; i < ref.NumField(); i++ {
-		if val[i] == "" || val[i] == nil {
-			return true
-		}
-	}
-	return false
 }
 
 func mapHasEmptyValue(obj primitive.M) bool {

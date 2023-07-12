@@ -29,12 +29,12 @@ func checkToken(c *gin.Context) {
 func login(c *gin.Context) {
 	var obj reqCommonLogin
 
-	if !bindJSON(c, &obj) {
-		respond(c, 500, "Invalid to decode request body as JSON.", nil)
+	if err := c.BindJSON(&obj); err != nil {
+		respond(c, 500, err.Error(), nil)
 		return
 	}
 
-	if structHasEmptyValue(obj) {
+	if len(obj.Password) == 0 || len(obj.Username) == 0 {
 		respond(c, 400, "Not enough argument.", nil)
 		return
 	}
@@ -85,14 +85,8 @@ func login(c *gin.Context) {
 func register(c *gin.Context) {
 	var obj reqCommonRegister
 
-	if !bindJSON(c, &obj) {
-		respond(c, 500, "Invalid to decode request body as JSON.", nil)
-		return
-	}
-
-	// Check: if any of the field of the struct is empty ("" or nil).
-	if structHasEmptyValue(obj) {
-		respond(c, 400, "Not enough argument", nil)
+	if err := c.BindJSON(&obj); err != nil {
+		respond(c, 500, err.Error(), nil)
 		return
 	}
 
@@ -158,8 +152,8 @@ func deleteComment(c *gin.Context) {
 
 	tg_username := decoded["username"].(string)
 
-	if !bindJSON(c, &obj) {
-		respond(c, 500, "Invalid to decode request body as JSON.", nil)
+	if err := c.BindJSON(&obj); err != nil {
+		respond(c, 500, err.Error(), nil)
 		return
 	}
 
@@ -206,8 +200,8 @@ func createComment(c *gin.Context) {
 
 	tg_username := decoded["username"].(string)
 
-	if !bindJSON(c, &obj) {
-		respond(c, 500, "Invalid to decode request body as JSON.", nil)
+	if err := c.BindJSON(&obj); err != nil {
+		respond(c, 500, err.Error(), nil)
 		return
 	}
 
