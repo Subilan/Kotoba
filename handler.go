@@ -21,19 +21,6 @@ func checkToken(c *gin.Context) {
 	respond(c, 200, "OK", true)
 }
 
-func deleteAccount(c *gin.Context) {
-	username := c.Param("username")
-
-	count, err := delete_many("accounts", bson.M{"username": username})
-
-	if err != nil {
-		respond(c, 500, t("Cannot delete target account {0}.", username), nil)
-		return
-	}
-
-	respond(c, 200, t("Successfully deleted {0} accounts.", count), nil)
-}
-
 func login(c *gin.Context) {
 	var obj reqCommonLogin
 
@@ -47,13 +34,13 @@ func login(c *gin.Context) {
 		return
 	}
 
-	res, dbErr := get_one("accounts", bson.M{
+	res, dbErr := mongoGetOne("accounts", bson.M{
 		"username": obj.Username,
 	})
 
 	if dbErr != nil {
 		if dbErr == mongo.ErrNoDocuments {
-			respond(c, 404, t("No such user named {0}.", obj.Username), nil)
+			respond(c, 404, f("No such user named {0}.", obj.Username), nil)
 			return
 		}
 		respond(c, 500, dbErr.Error(), nil)
@@ -99,7 +86,7 @@ func register(c *gin.Context) {
 		return
 	}
 
-	dupCount, countErr := count("accounts", bson.M{"username": obj.Username})
+	dupCount, countErr := mongoCount("accounts", bson.M{"username": obj.Username})
 
 	if countErr != nil {
 		respond(c, 500, countErr.Error(), nil)
@@ -125,7 +112,7 @@ func register(c *gin.Context) {
 		"website":  obj.Website,
 	}
 
-	insErr := insert_one("accounts", doc)
+	insErr := mongoInsertOne("accounts", doc)
 
 	if insErr != nil {
 		respond(c, 500, insErr.Error(), nil)
@@ -143,5 +130,5 @@ func register(c *gin.Context) {
 		return
 	}
 
-	respond(c, 200, t("Successfully created account {0}", obj.Username), token)
+	respond(c, 200, f("Successfully created account {0}", obj.Username), token)
 }

@@ -15,7 +15,6 @@ func main() {
 
 	private := global.Group("/private")
 	private.Use(middleTokenChecker())
-	private.DELETE("/user/delete/:username", deleteAccount)
 
 	global.Run("localhost:9080")
 }

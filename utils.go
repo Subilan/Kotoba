@@ -13,7 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func t(str string, args ...any) string {
+func f(str string, args ...any) string {
 	return stringFormatter.Format(str, args)
 }
 

@@ -9,8 +9,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func mongo_collection(name string) (*mongo.Collection, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 20 * time.Second)
+func mongoCollection(name string) (*mongo.Collection, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
@@ -20,8 +20,8 @@ func mongo_collection(name string) (*mongo.Collection, error) {
 	return collection, nil
 }
 
-func count(name string, filter bson.M) (int, error) {
-	collection, err := mongo_collection(name)
+func mongoCount(name string, filter bson.M) (int, error) {
+	collection, err := mongoCollection(name)
 	if err != nil {
 		return -1, err
 	}
@@ -42,8 +42,8 @@ func count(name string, filter bson.M) (int, error) {
 	return count, nil
 }
 
-func get_one(name string, filter bson.M) (bson.M, error) {
-	collection, err := mongo_collection(name)
+func mongoGetOne(name string, filter bson.M) (bson.M, error) {
+	collection, err := mongoCollection(name)
 	if err != nil {
 		return nil, err
 	}
@@ -51,15 +51,15 @@ func get_one(name string, filter bson.M) (bson.M, error) {
 	var result bson.M
 
 	fndErr := collection.FindOne(context.TODO(), filter).Decode(&result)
-	
+
 	if fndErr != nil {
 		return nil, fndErr
 	}
 	return result, nil
 }
 
-func insert_one(name string, doc bson.M) error {
-	collection, err := mongo_collection(name)
+func mongoInsertOne(name string, doc bson.M) error {
+	collection, err := mongoCollection(name)
 	if err != nil {
 		return err
 	}
@@ -73,12 +73,12 @@ func insert_one(name string, doc bson.M) error {
 	return nil
 }
 
-func update_one(name string, filter bson.M, update bson.M) error {
-	collection, err := mongo_collection(name)
+func mongoUpdateOne(name string, filter bson.M, update bson.M) error {
+	collection, err := mongoCollection(name)
 	if err != nil {
 		return err
 	}
-	
+
 	_, updErr := collection.UpdateOne(context.TODO(), filter, update)
 	if updErr != nil {
 		return updErr
@@ -87,8 +87,8 @@ func update_one(name string, filter bson.M, update bson.M) error {
 	return nil
 }
 
-func delete_many(name string, filter bson.M) (int, error) {
-	collection, err := mongo_collection(name)
+func mongoDeleteMany(name string, filter bson.M) (int, error) {
+	collection, err := mongoCollection(name)
 	if err != nil {
 		return 0, err
 	}
