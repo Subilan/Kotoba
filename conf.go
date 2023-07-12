@@ -1,4 +1,4 @@
-package kotoba
+package main
 
 import (
 	"os"

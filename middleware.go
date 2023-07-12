@@ -1,6 +1,8 @@
-package kotoba
+package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+)
 
 func middleFormatter() gin.HandlerFunc {
 	return gin.LoggerWithFormatter(loggerFormatter)

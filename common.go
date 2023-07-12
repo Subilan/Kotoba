@@ -1,4 +1,4 @@
-package kotoba
+package main
 
 import (
 	"encoding/json"
@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"reflect"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -41,7 +42,7 @@ func respond(c *gin.Context, code int, msg string, data any) {
 	})
 }
 
-func writeJSON[refT any](c *gin.Context, objRef refT) bool {
+func bindJSON(c *gin.Context, objRef any) bool {
 	body, ioErr := io.ReadAll(c.Request.Body)
 
 	if ioErr != nil {
@@ -52,13 +53,26 @@ func writeJSON[refT any](c *gin.Context, objRef refT) bool {
 	return true
 }
 
-func hasEmptyValue[structT any](obj structT) bool {
+func structHasEmptyValue(obj any) bool {
 	ref := reflect.ValueOf(obj)
 	val := make([]interface{}, ref.NumField())
 	for i := 0; i < ref.NumField(); i++ {
-		if val[i] == "" {
+		if val[i] == "" || val[i] == nil {
 			return true
 		}
 	}
 	return false
+}
+
+func mapHasEmptyValue(obj primitive.M) bool {
+	for _, v := range obj {
+		if v == "" || v == nil {
+			return true
+		}
+	}
+	return false
+}
+
+func parseInt(tg string) (int64, error) {
+	return strconv.ParseInt(tg, 0, 64)
 }

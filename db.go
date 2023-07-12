@@ -1,4 +1,4 @@
-package kotoba
+package main
 
 import (
 	"context"
@@ -97,4 +97,26 @@ func mongoDeleteMany(name string, filter bson.M) (int, error) {
 		return 0, delErr
 	}
 	return int(res.DeletedCount), nil
+}
+
+func mongoGetMany(name string, filter bson.M, options *options.FindOptions) ([]map[string]any, error) {
+	collection, err := mongoCollection(name)
+	if err != nil {
+		return nil, err
+	}
+	res, getErr := collection.Find(context.TODO(), filter, options)
+
+	if getErr != nil {
+		return nil, getErr
+	}
+
+	var tg []map[string]any
+
+	allErr := res.All(context.TODO(), &tg)
+
+	if allErr != nil {
+		return nil, allErr
+	}
+
+	return tg, nil
 }
