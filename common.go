@@ -48,6 +48,12 @@ func mapHasEmptyValue(obj primitive.M) bool {
 	return false
 }
 
-func parseInt(tg string) (int64, error) {
-	return strconv.ParseInt(tg, 0, 64)
+func parseInt(tg string, ref *int64) {
+	res, err := strconv.ParseInt(tg, 0, 64)
+
+	if err != nil {
+		*ref = 0
+	} else {
+		*ref = res
+	}
 }
