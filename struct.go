@@ -11,8 +11,3 @@ type reqCommonRegister struct {
 	Avatar   string `json:"avatar"`
 	Website  string `json:"website"`
 }
-
-type resLogin struct {
-	Avatar  string `json:"avatar"`
-	Website string `json:"website"`
-}
