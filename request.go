@@ -13,9 +13,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/crypto/bcrypt"
 )
 
-func t(str string, args ...interface{}) string {
+func t(str string, args ...any) string {
 	return stringFormatter.Format(str, args)
 }
 
@@ -88,7 +89,6 @@ func login(c *gin.Context) {
 
 	res, dbErr := get_one("accounts", bson.M{
 		"username": obj.Username,
-		"password": obj.Password,
 	})
 
 	if dbErr != nil {
@@ -101,14 +101,16 @@ func login(c *gin.Context) {
 	}
 
 	tg_username := res["username"]
-	tg_password := res["password"]
+	tg_hash := res["hash"]
 	tg_avatar := res["avatar"]
 	tg_website := res["website"]
 
-	if tg_username != obj.Username || tg_password != obj.Password {
+	hashErr := bcrypt.CompareHashAndPassword(tg_hash.([]byte), []byte(obj.Password))
+
+	if hashErr != nil {
 		respond(c, 403, "Incorrect credentials", nil)
 	} else {
-		respond(c, 200, "", resLogin{Avatar: tg_avatar.(string), Website: tg_website.(string)})
+		respond(c, 200, "", resLogin{Username: tg_username.(string), Avatar: tg_avatar.(string), Website: tg_website.(string)})
 	}
 }
 
@@ -125,13 +127,6 @@ func register(c *gin.Context) {
 		return
 	}
 
-	doc := bson.M{
-		"username": obj.Username,
-		"password": obj.Password,
-		"avatar":   obj.Avatar,
-		"website":  obj.Website,
-	}
-
 	dupCount, countErr := count("accounts", bson.M{"username": obj.Username})
 
 	if countErr != nil {
@@ -144,11 +139,26 @@ func register(c *gin.Context) {
 		return
 	}
 
-	status, err := upsert_one("accounts", doc, bson.M{})
+	hashed, hashErr := bcrypt.GenerateFromPassword([]byte(obj.Password), bcrypt.DefaultCost)
+
+	if hashErr != nil {
+		respond(c, 500, hashErr.Error(), nil)
+		return
+	}
+
+	doc := bson.M{
+		"username": obj.Username,
+		"hash": hashed,
+		"avatar":   obj.Avatar,
+		"website":  obj.Website,
+	}
+
+	
+	err := insert_one("accounts", doc)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err)
+		respond(c, 500, err.Error(), nil)
 	} else {
-		c.JSON(http.StatusOK, status)
+		respond(c, 200, t("Successfully created account {0}", obj.Username), nil)
 	}
 }
