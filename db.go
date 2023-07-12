@@ -1,4 +1,4 @@
-package main
+package kotoba
 
 import (
 	"context"
@@ -10,7 +10,8 @@ import (
 )
 
 func mongo_collection(name string) (*mongo.Collection, error) {
-	ctx, _ := context.WithTimeout(context.Background(), 20 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 20 * time.Second)
+	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
 		return nil, err

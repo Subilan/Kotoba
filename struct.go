@@ -1,4 +1,4 @@
-package main
+package kotoba
 
 type reqCommonLogin struct {
 	Username string `json:"username"`

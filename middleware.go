@@ -1,4 +1,4 @@
-package main
+package kotoba
 
 import "github.com/gin-gonic/gin"
 
