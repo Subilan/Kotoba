@@ -242,7 +242,7 @@ func toggleReaction(c *gin.Context) {
 		"comment_id": tg_commentId,
 	}
 
-	count, countErr := mongoCount("comments", doc)
+	count, countErr := mongoCount("comment_reactions", doc)
 
 	if countErr != nil {
 		respond(c, 500, countErr.Error(), nil)
@@ -251,7 +251,7 @@ func toggleReaction(c *gin.Context) {
 
 	if count > 0 {
 		// The response is present, just delete it.
-		_, delErr := mongoDeleteMany("comments", doc)
+		_, delErr := mongoDeleteMany("comment_reactions", doc)
 		if delErr != nil {
 			respond(c, 500, delErr.Error(), nil)
 			return
@@ -261,7 +261,7 @@ func toggleReaction(c *gin.Context) {
 		doc["created_at"] = time.Now().UnixMilli()
 
 		// The response is not present, create it.
-		insErr := mongoInsertOne("comments", doc)
+		insErr := mongoInsertOne("comment_reactions", doc)
 
 		if insErr != nil {
 			respond(c, 500, insErr.Error(), nil)
@@ -303,20 +303,20 @@ func getComments(c *gin.Context) {
 	filter := bson.M{}
 	// desc: the newest at the top; asc: the oldest at the top
 	if tg_order == "desc" {
-		// when using desc, the comments we'll get are bound to have dates that are smaller than what is already present.
 		if tg_borderTimestamp != 0 {
 			filter = bson.M{
 				"created_at": bson.M{
+					// when using desc, the comments we'll get are bound to have dates that are smaller than what is already present.
 					"$lt": tg_borderTimestamp,
 				},
 			}
 		}
 		tg_order_num = -1
 	} else {
-		// when using asc, the comments we'll get are bound to have dates that are bigger than what is already present.
 		if tg_borderTimestamp != 0 {
 			filter = bson.M{
 				"created_at": bson.M{
+					// when using asc, the comments we'll get are bound to have dates that are bigger than what is already present.
 					"$gt": tg_borderTimestamp,
 				},
 			}
