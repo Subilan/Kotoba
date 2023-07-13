@@ -122,6 +122,7 @@ func register(c *gin.Context) {
 		"hash":     hashed,
 		"avatar":   obj.Avatar,
 		"website":  obj.Website,
+		"created_at": time.Now().UnixMilli(),
 	})
 
 	if insErr != nil {

@@ -26,10 +26,11 @@ type reqReaction struct {
 }
 
 type bsonUser struct {
-	Username string           `bson:"username"`
-	Hash     primitive.Binary `bson:"hash"`
-	Avatar   string           `bson:"avatar"`
-	Website  string           `bson:"website"`
+	Username  string           `bson:"username"`
+	Hash      primitive.Binary `bson:"hash"`
+	Avatar    string           `bson:"avatar"`
+	Website   string           `bson:"website"`
+	CreatedAt uint64           `bson:"created_at"`
 }
 
 type bsonComment struct {
