@@ -5,20 +5,28 @@ import (
 )
 
 func main() {
-	global := gin.New()
-	global.Use(middleFormatter())
+	router := gin.New()
+	router.Use(middleFormatter())
 
-	public := global.Group("/public")
-	public.POST("/auth/login", login)
-	public.POST("/auth/register", register)
-	public.POST("/check-token", checkToken)
-	public.GET("/comments", getComments)
+	auth := router.Group("/auth")
 
-	private := global.Group("/private")
-	private.Use(middleTokenChecker())
-	private.POST("/comment/delete", deleteComment)
-	private.POST("/comment/create", createComment)
-	private.POST("/comment/toggle-reaction", toggleReaction)
+	auth.POST("/auth/login", login)
+	auth.POST("/auth/register", register)
+	auth.POST("/auth/check-token", checkToken)
 
-	global.Run("localhost:9080")
+	account := router.Group("/account")
+	account.Use(middleTokenChecker())
+	account.POST("/account/update", updateAccount)
+	account.DELETE("/account/delete", deleteAccount)
+
+	comment := router.Group("/comment")
+	comment.DELETE("/comment/delete/:commentId", deleteComment)
+	comment.POST("/comment/create", createComment)
+	comment.POST("/comment/update", updateComment)
+	comment.POST("/comment/toggle-reaction", toggleReaction)
+
+	publicGet := router.Group("/public/get")
+	publicGet.GET("/comment", getComments)
+
+	router.Run("localhost:9080")
 }

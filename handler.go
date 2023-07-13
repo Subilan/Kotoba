@@ -146,9 +146,12 @@ func register(c *gin.Context) {
 }
 
 func deleteComment(c *gin.Context) {
-	var obj reqDeleteComment
+	q_commentId := c.Param("commentId")
 
-	// Get username from JWT
+	if q_commentId == "" {
+		respond(c, 500, "Not enough argument.", nil)
+	}
+
 	decoded, err := extractJWT(c.Request.Header.Get("Token"))
 
 	if err != nil {
@@ -157,13 +160,7 @@ func deleteComment(c *gin.Context) {
 	}
 
 	tg_username := decoded["username"].(string)
-
-	if err := c.BindJSON(&obj); err != nil {
-		respond(c, 500, err.Error(), nil)
-		return
-	}
-
-	tg_commentId := obj.CommentId
+	tg_commentId := q_commentId
 
 	res, getErr := mongoGetOne("comments", bson.M{
 		"comment_id": tg_commentId,
@@ -353,4 +350,92 @@ func getComments(c *gin.Context) {
 	}
 
 	respond(c, 200, f("Found {0} comments.", len(res)), res)
+}
+
+func updateComment(c *gin.Context) {
+	var obj reqAlterComment
+
+	if err := c.BindJSON(&obj); err != nil {
+		respond(c, 500, err.Error(), nil)
+		return
+	}
+
+	tg_commentId := obj.CommentId
+	tg_text := obj.Text
+
+	err := mongoUpdateOne("comments", bson.M{
+		"comment_id": tg_commentId,
+	}, bson.M{
+		"$set": bson.M{
+			"text": tg_text,
+		},
+	})
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			respond(c, 500, f("No such comment with id {0}", tg_commentId), nil)
+		}
+		respond(c, 500, err.Error(), nil)
+		return
+	}
+
+	respond(c, 200, "Successfully altered the comment.", nil)
+}
+
+func deleteAccount(c *gin.Context) {
+	decoded, decErr := extractJWT(c.Request.Header.Get("Token"))
+
+	if decErr != nil {
+		respond(c, 403, decErr.Error(), nil)
+		return
+	}
+
+	_, delErr := mongoDeleteMany("accounts", bson.M{
+		"username": decoded["username"],
+	})
+
+	if delErr != nil {
+		respond(c, 500, delErr.Error(), nil)
+		return
+	}
+
+	respond(c, 200, "Successfully deleted your account.", nil)
+}
+
+func updateAccount(c *gin.Context) {
+	var obj reqAlterAccount
+
+	decoded, err := extractJWT(c.Request.Header.Get("Token"))
+
+	if err != nil {
+		respond(c, 403, err.Error(), nil)
+		return
+	}
+
+	tg_username := decoded["username"]
+	tg_avatar := obj.Avatar
+	tg_website := obj.Website
+	tg_hash, hashErr := bcrypt.GenerateFromPassword([]byte(obj.Password), bcrypt.DefaultCost)
+
+	if hashErr != nil {
+		respond(c, 500, hashErr.Error(), nil)
+		return
+	}
+
+	updErr := mongoUpdateOne("accounts", bson.M{
+		"username": tg_username,
+	}, bson.M{
+		"$set": bson.M{
+			"avatar":  tg_avatar,
+			"website": tg_website,
+			"hash":    tg_hash,
+		},
+	})
+
+	if updErr != nil {
+		respond(c, 500, updErr.Error(), nil)
+		return
+	}
+
+	respond(c, 200, "Successfully altered user information.", nil)
 }
