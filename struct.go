@@ -25,6 +25,13 @@ type reqReaction struct {
 	Emoji     string `json:"emoji"`
 }
 
+type bsonUser struct {
+	Username string           `bson:"username"`
+	Hash     primitive.Binary `bson:"hash"`
+	Avatar   string           `bson:"avatar"`
+	Website  string           `bson:"website"`
+}
+
 type bsonComment struct {
 	Username  string `bson:"username"`
 	Text      string `bson:"text"`
