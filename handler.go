@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -29,7 +30,12 @@ func login(c *gin.Context) {
 	var obj reqCommonLogin
 
 	if err := c.BindJSON(&obj); err != nil {
-		respond(c, 500, err.Error(), nil)
+		switch err.(type) {
+		default:
+			respond(c, 500, err.Error(), nil)
+		case *json.UnmarshalTypeError:
+			respond(c, 500, "Invalid argument type.", nil)
+		}
 		return
 	}
 
@@ -225,6 +231,11 @@ func createComment(c *gin.Context) {
 func toggleReaction(c *gin.Context) {
 	var obj reqReaction
 
+	if err := c.BindJSON(&obj); err != nil {
+		respond(c, 500, err.Error(), nil)
+		return
+	}
+
 	decoded, err := extractJWT(c.Request.Header.Get("Token"))
 
 	if err != nil {
@@ -256,7 +267,7 @@ func toggleReaction(c *gin.Context) {
 			respond(c, 500, delErr.Error(), nil)
 			return
 		}
-		respond(c, 200, "", nil)
+		respond(c, 200, "Deleted target reaction.", nil)
 	} else {
 		doc["created_at"] = time.Now().UnixMilli()
 
@@ -268,7 +279,7 @@ func toggleReaction(c *gin.Context) {
 			return
 		}
 
-		respond(c, 200, "", nil)
+		respond(c, 200, "Created target reaction.", nil)
 	}
 
 }
