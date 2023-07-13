@@ -20,6 +20,7 @@ func main() {
 	account.DELETE("/account/delete", deleteAccount)
 
 	comment := router.Group("/comment")
+	comment.Use(middleTokenChecker())
 	comment.DELETE("/comment/delete/:commentId", deleteComment)
 	comment.POST("/comment/create", createComment)
 	comment.POST("/comment/update", updateComment)
