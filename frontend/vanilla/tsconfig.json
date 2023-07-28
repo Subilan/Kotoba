@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "noImplicitAny": false,
+        "target": "ES5",
+        "module": "AMD",
+        "lib": [
+            "DOM",
+            "DOM.Iterable",
+            "ESNext"
+        ],
+        "baseUrl": "."
+    },
+    "include": [
+        "**/*.ts"
+    ]
+}
