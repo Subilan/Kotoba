@@ -10,10 +10,11 @@
         ],
         "baseUrl": ".",
         "outFile": "dist/kotoba.js",
-        "esModuleInterop": true
+        "esModuleInterop": true,
+        "moduleResolution": "NodeNext"
     },
     "include": [
         "src/**/*",
         "Src/*"
-    ]
+, "config.ts"    ]
 }
