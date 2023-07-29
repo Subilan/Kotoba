@@ -350,6 +350,18 @@ func getComments(c *gin.Context) {
 		return
 	}
 
+	for _, r := range res {
+		user, err := mongoGetOne("accounts", bson.M{"username": r["username"]})
+
+		if err != nil {
+			respond(c, 500, err.Error(), nil)
+			return
+		}
+
+		r["user_avatar"] = user["avatar"]
+		r["user_website"] = user["website"]
+	}
+
 	respond(c, 200, f("Found {0} comments.", len(res)), res)
 }
 
