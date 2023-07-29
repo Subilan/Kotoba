@@ -216,6 +216,7 @@ func createComment(c *gin.Context) {
 		"text":       tg_text,
 		"comment_id": uuid.New().String(),
 		"created_at": time.Now().UnixMilli(),
+		"updated_at": time.Now().UnixMilli(),
 	})
 
 	if insErr != nil {
@@ -368,6 +369,7 @@ func updateComment(c *gin.Context) {
 	}, bson.M{
 		"$set": bson.M{
 			"text": tg_text,
+			"updated_at": time.Now().UnixMilli(),
 		},
 	})
 
