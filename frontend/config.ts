@@ -1,13 +1,3 @@
-interface KotobaConfig {
-    commentTextareaPlaceholder: string;
-    commentTextareaMaxlength: number;
-    commentTextareaMinlength: number;
-    commentSameIPLimit: number;
-    commentAllowGuest: boolean;
-    commentShowGuestIP: boolean;
-    commentShowIPOrigin: boolean;
-}
-
 export default {
     // 占位符：评论区输入框内显示的默认文本
 	commentTextareaPlaceholder: '在此键入评论...',
@@ -24,4 +14,6 @@ export default {
     commentShowGuestIP: false,
     // 是否显示评论的 IP 属地；默认值 false
     commentShowIPOrigin: false,
-} as KotobaConfig;
+    // API 地址：后端所在的位置。以 https?:// 开头，不以 / 结尾。
+    apiURL: "http://127.0.0.1:9080"
+};
