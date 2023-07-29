@@ -27,7 +27,8 @@ func main() {
 	comment.POST("/comment/toggle-reaction", toggleReaction)
 
 	publicGet := router.Group("/public/get")
-	publicGet.GET("/comment", getComments)
+	publicGet.GET("/comments", getComments)
+	publicGet.GET("/comment-reactions", getReactions)
 
 	router.Run("localhost:9080")
 }

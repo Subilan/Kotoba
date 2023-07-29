@@ -453,3 +453,23 @@ func updateAccount(c *gin.Context) {
 
 	respond(c, 200, "Successfully altered user information.", nil)
 }
+
+func getReactions(c *gin.Context) {
+	tg_commentid := c.Query("uid")
+
+	if tg_commentid == "" {
+		respond(c, 500, "Not enough argument.", nil)
+		return
+	}
+
+	res, getErr := mongoGetMany("comment_reactions", bson.M{
+		"comment_id": tg_commentid,
+	}, options.Find())
+
+	if getErr != nil {
+		respond(c, 500, getErr.Error(), nil)
+		return
+	}
+
+	respond(c, 200, f("Found {0} reactions for {1}", len(res), tg_commentid), res)
+}
