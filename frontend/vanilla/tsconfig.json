@@ -8,9 +8,11 @@
             "DOM.Iterable",
             "ESNext"
         ],
-        "baseUrl": "."
+        "baseUrl": ".",
+        "outFile": "dist/kotoba.js"
     },
     "include": [
-        "**/*.ts"
+        "src/**/*.ts",
+        "src/*.ts"
     ]
 }
