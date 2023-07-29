@@ -55,6 +55,7 @@ type bsonComment struct {
 	Text      string `bson:"text"`
 	Uid       string `bson:"uid"`
 	CreatedAt uint64 `bson:"created_at"`
+	UpdatedAt uint64 `bson:"updated_at"`
 }
 
 type bsonCommentReaction struct {
