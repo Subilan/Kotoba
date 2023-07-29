@@ -1,4 +1,4 @@
-import config from "../../config";
+import config from "../config";
 
 interface KotobaAccountBasic {
   avatar: string;
@@ -13,7 +13,6 @@ interface KotobaComment {
   username: string;
   user_avatar: string;
   user_website: string;
-  r;
   text: string;
   uid: string;
   created_at: number;
@@ -38,3 +37,11 @@ type ReactionResultMap = {
 };
 
 type ConfigName = keyof typeof config;
+
+type KotobaResponse<T = any> = {
+  code: 200 | 500 | 403 | 400 | 404 | 409;
+  data: T;
+  message: string;
+  ok: boolean;
+  timestamp: number;
+};
