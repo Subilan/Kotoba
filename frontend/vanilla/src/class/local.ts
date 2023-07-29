@@ -1,4 +1,4 @@
-class Local {
+export class Local {
 	public static getToken() {
 		return localStorage.getItem('kotoba-login-token');
 	}

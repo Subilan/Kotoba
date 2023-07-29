@@ -1,20 +1,23 @@
-import axios from "node_modules/axios/index";
 import markdownit from "markdown-it";
-import { KotobaCommentReaction, ReactionResultMap, KotobaComment } from "./types";
-import { c, getPayloadFromToken } from "./fn";
+import {
+  KotobaCommentReaction,
+  ReactionResultMap,
+  KotobaComment,
+  KotobaUserPayload,
+} from "./types";
+import { c, get, getPayloadFromToken } from "./fn";
+import { Local } from "./class/local";
 
 const apiURL = c("apiURL");
 
 async function buildReactions(commentUid: string) {
-  const reactions = await axios.get<KotobaCommentReaction[]>(
+  const reactions = await get<KotobaCommentReaction[]>(
     `${apiURL}/public/get/comment-reactions?uid=${commentUid}`
   );
 
-  if (!reactions.data) {
-    return `<div class="add-reaction">添加贴纸</div>`;
-  } else {
+  if (Array.isArray(reactions)) {
     const resultMap: ReactionResultMap = {};
-    for (let r of reactions.data) {
+    for (let r of reactions) {
       if (Object.keys(resultMap).includes(r.emoji)) {
         resultMap[r.emoji].count++;
         resultMap[r.emoji].meta.push({
@@ -41,19 +44,23 @@ async function buildReactions(commentUid: string) {
     });
     resultHTML += "</div>";
     return resultHTML;
+  } else {
+    return `<div class="add-reaction">添加贴纸</div>`;
   }
 }
 
 (async () => {
   const token = Local.getToken();
   const md = new markdownit();
+  let payload: KotobaUserPayload = {
+    username: "Guest",
+    avatar: "<default>",
+    website: window.location.href,
+  };
   let template = `[[templates.kotoba]]`;
 
-  if (!token) {
-    console.warn("Token not found.");
-  }
-
-  const payload = getPayloadFromToken(token);
+  if (!token) console.warn("Token not found.");
+  else payload = getPayloadFromToken(token);
 
   template = template
     .replace("macro:user-avatar", payload.avatar)
@@ -61,26 +68,29 @@ async function buildReactions(commentUid: string) {
     .replace("macro:input-maxlength", c("commentTextareaMaxlength"))
     .replace("macro:input-minlength", c("commentTextareaMinlength"));
 
-  const initialCommentsReq = await axios.get<KotobaComment[]>(
-    `${apiURL}/public/get/comments?limit=5&order=desc`
-  );
+  let commentsHTML = ``;
 
-  if (initialCommentsReq.data) {
-    const initialComments = initialCommentsReq.data;
+  const comments = await get<KotobaComment[]>(`${apiURL}/public/get/comments?limit=5&order=desc`);
+
+  if (Array.isArray(comments)) {
     const commentTempl = `[[templates.comment]]`;
-    let comments = ``;
-
-    for (let comment of initialComments) {
-      comments += commentTempl
-        .replace("macro.comment-avatar", comment.user_avatar)
+    for (let comment of comments) {
+      commentsHTML += commentTempl
+        .replace("macro:comment-username", comment.username)
+        .replace("macro:comment-user-website", comment.user_website || "#")
+        .replace("macro:comment-avatar", comment.user_avatar)
         .replace(
-          "macro.comment-date",
+          "macro:comment-date",
           comment.updated_at === comment.created_at
             ? new Date(comment.created_at).toLocaleString()
             : `编辑于 ${new Date(comment.updated_at).toLocaleString()}`
         )
-        .replace("macro.comment-content-html", md.render(comment.text))
-        .replace("macro.reaction-html", await buildReactions(comment.uid));
+        .replace("macro:comment-content-html", md.render(comment.text))
+        .replace("macro:reaction-html", await buildReactions(comment.uid));
     }
   }
+
+  template = template.replace("macro:comments-html", commentsHTML);
+
+  document.getElementById("kotoba").innerText = template;
 })();

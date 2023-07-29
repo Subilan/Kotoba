@@ -1,4 +1,4 @@
-class Limit {
+export class Limit {
 	public target: any;
 	public defaultValue: any;
 
